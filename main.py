@@ -70,17 +70,15 @@ if __name__ == "__main__":
 
             # FPS counter
             frames_counter += 1
-            if frames_counter == 9:
+            if frames_counter == 99:
                 lapse_time = time.time_ns() - start_time
                 start_time = time.time_ns()
-                fps = 10_000_000_000/lapse_time
-                print(f"fps: {fps}")
+                fps = 100_000_000_000/lapse_time
+                #print(f"fps: {fps}")
                 streaming_output.set_fps(fps)
                 frames_counter = 0
 
             last_frame, gray1 = frame, gray2
-
-
     except KeyboardInterrupt:
         pass
     except Exception as e:
