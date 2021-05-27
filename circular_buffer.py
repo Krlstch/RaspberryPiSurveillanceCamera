@@ -1,5 +1,5 @@
 class CircularBuffer:
-    def __init__(self, size=300):
+    def __init__(self, size=30):
         self.size = size
         self.buffer = [None for _ in range(size)]
         self.start = 0

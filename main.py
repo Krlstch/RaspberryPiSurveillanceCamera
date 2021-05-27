@@ -1,16 +1,21 @@
 from circular_buffer import CircularBuffer
 from streaming_service import StreamingService, StreamingOutput
+from buffer import Buffer
+from constants import *
 import time
 import cv2
+import threading
 
-WIDTH = 640
-HEIGHT = 480
-FPS = 10
+def get_gray_frame(frame):
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    gray = cv2.GaussianBlur(gray, (21, 21), 0)
+    return gray
 
-PREVIEW_LENGTH = 30 # in frames
-POSTVIEW_LENGTH = 30 # in frames
-
-DIRECTORY = "recordings"
+def detect_movement(frame1, frame2):     
+    delta = cv2.absdiff(frame1, frame2)
+    threshold = cv2.threshold(delta, 25, 255, cv2.THRESH_BINARY)[1]
+    threshold = cv2.dilate(threshold, None)
+    return not (threshold == 0).all()
 
 
 if __name__ == "__main__":
@@ -27,15 +32,15 @@ if __name__ == "__main__":
 
 
     frames_counter = 0
+    print("Camera: start of recording")
     try:
-        _, last_frame = capture.read()
-        gray1 = cv2.cvtColor(last_frame, cv2.COLOR_BGR2GRAY)
-        gray1 = cv2.GaussianBlur(gray1, (21, 21), 0)
+        last_frame = capture.read()[1]
+        last_frame_gray = get_gray_frame(last_frame)
 
  
         start_time = time.time_ns()
         while True:
-            _ , frame = capture.read()
+            frame = capture.read()[1]
 
             # to streaming service
             jpeg_frame = cv2.imencode(".jpg", frame)[1].tobytes()
@@ -45,28 +50,26 @@ if __name__ == "__main__":
             circular_buffer.add_frame(frame)
 
             # detecting movement
-            gray2 = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            gray2 = cv2.GaussianBlur(gray2, (21, 21), 0)
-            
-            delta = cv2.absdiff(gray1, gray2)
-            threshold = cv2.threshold(delta, 25, 255, cv2.THRESH_BINARY)[1]
-            threshold = cv2.dilate(threshold, None)
-            if not (threshold == 0).all(): #movement detected
+            frame_gray = get_gray_frame(frame)
+
+            if detect_movement(frame_gray, last_frame_gray): #movement detected
                 frames_left = POSTVIEW_LENGTH
                 if not is_saving:
+                    print("Camera: start of saving recoding")
                     is_saving = True
-                    file_name = time.strftime("%y%m%d%H%M%S", time.localtime())
-                    video_writer = cv2.VideoWriter(f"{DIRECTORY}/{file_name}.avi", cv2.VideoWriter_fourcc('M','J','P','G'),
-                                                     FPS, (WIDTH, HEIGHT))
-                    circular_buffer.save(video_writer)
+                    buffer = Buffer(circular_buffer)
+                    circular_buffer = CircularBuffer(PREVIEW_LENGTH)
+                    threading.Thread(target=buffer.save).start()
             else:
-                frames_left -= 1
-                if frames_left == 0:
-                    is_saving = False
+                if is_saving:
+                    frames_left -= 1
+                    if frames_left == 0:
+                        is_saving = False
+                        print("Camera: end of saving recoding")
             
             # save frames if is saving
             if is_saving:
-                video_writer.write(frame)
+                buffer.add_frame(frame)
 
             # FPS counter
             frames_counter += 1
@@ -74,16 +77,16 @@ if __name__ == "__main__":
                 lapse_time = time.time_ns() - start_time
                 start_time = time.time_ns()
                 fps = 100_000_000_000/lapse_time
-                #print(f"fps: {fps}")
+                print(f"fps: {fps}")
                 streaming_output.set_fps(fps)
                 frames_counter = 0
 
-            last_frame, gray1 = frame, gray2
+            last_frame, last_frame_gray = frame, frame_gray
     except KeyboardInterrupt:
         pass
     except Exception as e:
         print(e)
-
+    print("Camera: end of recording")
 
     capture.release()
     cv2.destroyAllWindows()
