@@ -3,8 +3,25 @@
         <title>Raspberry Pi - Surveillance Camera</title>
     </head>
     <body>
-        <center>
+        <left>
             <h1>Files</h1>
-        </center>
+        </left>
+
+        <table>
+            {%for i in range(len)%}
+            <tr>
+                <td>{{files[i]}}</td>
+                <td><a href=/files/download/{{files[i]}}>download</a></td>
+            </tr>
+            {%endfor%}
+        </table>
+        {% if not files %}
+        There aren't any recorded files yet
+        {% endif %}
+
+        <form action="/video" method="get">
+            <button type="submit">Watch stream</button>
+        </form>
+
     </body>
 </html>

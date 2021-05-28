@@ -3,7 +3,15 @@
         <title>Raspberry Pi Surveillance Camera</title>
     </head>
     <body>
-        <h1>Raspberry Pi Surveillance Camera</h1>
-        <img src="{{ url_for('video_feed') }}">
+        <center>
+            <h1>Raspberry Pi Surveillance Camera</h1>
+            <img src="{{ url_for('video_feed') }}">
+        </center>
+        <br>
+        <center>
+            <form action="/files" method="get">
+                <button type="submit">Download files</button>
+            </form>
+        </center>
     </body>
 </html>
