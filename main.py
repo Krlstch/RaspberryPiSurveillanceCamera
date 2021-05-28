@@ -34,8 +34,7 @@ if __name__ == "__main__":
     frames_counter = 0
     print("Camera: start of recording")
     try:
-        last_frame = capture.read()[1]
-        last_frame_gray = get_gray_frame(last_frame)
+        last_frame_gray = get_gray_frame(capture.read()[1])
 
  
         start_time = time.time_ns()
@@ -81,7 +80,7 @@ if __name__ == "__main__":
                 streaming_output.set_fps(fps)
                 frames_counter = 0
 
-            last_frame, last_frame_gray = frame, frame_gray
+            last_frame_gray = frame_gray
     except KeyboardInterrupt:
         pass
     except Exception as e:
@@ -89,4 +88,3 @@ if __name__ == "__main__":
     print("Camera: end of recording")
 
     capture.release()
-    cv2.destroyAllWindows()

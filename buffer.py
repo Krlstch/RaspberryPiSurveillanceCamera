@@ -17,15 +17,8 @@ class Buffer:
         
     def save(self):
         # copy circular buffer
-        i = self.circular_buffer.start 
-        while True:
-            if self.circular_buffer.buffer[i] is not None:
-                self.video_writer.write(self.circular_buffer.buffer[i])
-
-
-            i = (i+1) % self.circular_buffer.size
-            if i == self.circular_buffer.start:
-                break
+        self.circular_buffer.save(self.video_writer)
+        
         # copy from queue
         try:
             while True:
