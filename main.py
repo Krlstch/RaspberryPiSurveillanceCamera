@@ -88,3 +88,4 @@ if __name__ == "__main__":
     print("Camera: end of recording")
 
     capture.release()
+    cv2.destroyAllWindows()
