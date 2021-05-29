@@ -43,7 +43,7 @@ class RecordingService:
         start_time = time.time_ns()
         while True:
             frame = self.capture.read()[1]
-            cv2.imshow("Frame", frame)
+            
             # to streaming service
             jpeg_frame = cv2.imencode(".jpg", frame)[1].tobytes()
             self.output.set_frame(jpeg_frame)
