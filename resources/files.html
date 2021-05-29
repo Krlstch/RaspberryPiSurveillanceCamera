@@ -8,15 +8,32 @@
         </left>
 
         <table>
-            {%for i in range(len)%}
             <tr>
-                <td>{{files[i]}}</td>
-                <td><a href=/files/download/{{files[i]}}>download</a></td>
+                <th>File name</th>
+                <th>Date</th>
+                <th>Download</th>
+                <th>Delete</th>
+            </tr>
+
+            {%for file, creation_time in zip(files, creation_times)%}
+            <tr>
+                <td>{{file}}</td>
+                <td><b>{{creation_time}}<b></td>
+                <td><a href=/files/download/{{file}}>download</a></td>
+                <td><a href=/files/delete/{{file}}>delete</a></td>
             </tr>
             {%endfor%}
+            {% if files %}
+            <tr>
+                <td></td>
+                <td></td>
+                <td><a href="/files/download_all">download all</a></td>
+                <td><a href="/files/delete_all">delete all</a></td>
+            </tr>
+            {% endif %}
         </table>
         {% if not files %}
-        There aren't any recorded files yet
+        There aren't any recorded files yet.
         {% endif %}
 
         <form action="/video" method="get">
